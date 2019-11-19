@@ -17,6 +17,7 @@ contract('SupplyChain', function(accounts) {
     const owner = accounts[0]
     const alice = accounts[1]
     const bob = accounts[2]
+    const tom = accounts[2]
     const emptyAddress = '0x0000000000000000000000000000000000000000'
 
     const price = "1000"
@@ -69,6 +70,11 @@ contract('SupplyChain', function(accounts) {
         assert.equal(result[5], bob, 'the buyer address should be set bob when he purchases an item')
         assert.equal(new BN(aliceBalanceAfter).toString(), new BN(aliceBalanceBefore).add(new BN(price)).toString(), "alice's balance should be increased by the price of the item")
         assert.isBelow(Number(bobBalanceAfter), Number(new BN(bobBalanceBefore).sub(new BN(price))), "bob's balance should be reduced by more than the price of the item (including gas costs)")
+    })
+
+    it("should error when not enough value is sent when purchasing an item", async()=>{
+        await instance.addItem(name, price, {from: alice})
+        await catchRevert(instance.buyItem(0, {from: bob, value: 1}))
     })
 
     it("should error when not enough value is sent when purchasing an item", async()=>{
@@ -152,6 +158,18 @@ contract('SupplyChain', function(accounts) {
         }
 
         assert.equal(eventEmitted, true, 'adding an item should emit a Shipped event')
+    })
+
+    it("should revert when someone tries to call buyItem() for a sold item", async()=>{
+        await instance.addItem(name, price, {from: alice})
+        await instance.buyItem(0, {from: bob, value: price})
+        await catchRevert(instance.buyItem(0, {from: tom}))
+    })
+
+    it("should revert when someone tries to call buyItem() for a not added item", async()=>{
+        await instance.addItem(name, price, {from: alice})
+        await instance.buyItem(0, {from: bob, value: price})
+        await catchRevert(instance.buyItem(10, {from: tom}))
     })
 
 })
