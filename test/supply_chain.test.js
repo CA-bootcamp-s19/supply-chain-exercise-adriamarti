@@ -166,10 +166,11 @@ contract('SupplyChain', function(accounts) {
         await catchRevert(instance.buyItem(0, {from: tom}))
     })
 
-    it("should revert when someone tries to call buyItem()/shipItem()/receiveItem()/ for a not added item", async()=>{
+    it("should revert when someone tries to call fetchItem()/buyItem()/shipItem()/receiveItem()/ for a not added item", async()=>{
         await catchRevert(instance.buyItem(10, {from: alice}))
         await catchRevert(instance.shipItem(10, {from: alice}))
         await catchRevert(instance.receiveItem(10, {from: alice}))
+        await catchRevert(instance.fetchItem.call(10))
     })
 
 })
